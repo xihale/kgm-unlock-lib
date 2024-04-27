@@ -111,21 +111,20 @@ uint8_t get_mask(std::size_t pos) {
   return MaskV2PreDef[pos % 272] ^ value;
 }
 
-static std::array<uint8_t, 0x10 + 1> key;
-
 } // namespace utils
 
 std::vector<char> decrypt(std::span<uint8_t> data, bool is_vpr) {
 
+  std::array<uint8_t, 0x10 + 1> key;
   uint32_t headerLen = *(uint32_t *)(data.data() + 0x10);
-  std::copy_n(data.data() + 0x1C, 0x10, utils::key.data());
-  utils::key[16] = 0;
+  std::copy_n(data.data() + 0x1C, 0x10, key.data());
+  key[16] = 0;
   data = data.subspan(headerLen);
 
   std::vector<char> result(data.size());
 
   for (std::size_t i = 0; i < data.size(); ++i) {
-    uint8_t med8 = utils::key[i % 17] ^ data[i];
+    uint8_t med8 = key[i % 17] ^ data[i];
     med8 ^= (med8 & 0xf) << 4;
 
     uint8_t msk8 = utils::get_mask(i);
